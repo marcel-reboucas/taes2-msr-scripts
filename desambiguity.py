@@ -14,13 +14,12 @@ def substring_before(s, delim):
 	return s.split(delim)[0]
 
 def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', input_str.decode('utf-8'))
-    only_ascii = nfkd_form.encode('ASCII', 'ignore')
-    return only_ascii
+    nfkd_form = unicodedata.normalize('NFKD', input_str.decode('utf-8').strip())
+    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 def remove_punctuation(input_str):
 	table = string.maketrans("","")
-	return input_str.translate(table, string.punctuation)
+	return input_str.translate(table, string.punctuation.replace("@",""))
 
 def is_same_person(name1_u, email1_u, name2_u, email2_u, threshold = 0.93):
 	
@@ -38,9 +37,9 @@ def is_same_person(name1_u, email1_u, name2_u, email2_u, threshold = 0.93):
 	'''
 
 	name1 = remove_accents(remove_punctuation(name1_u.lower()))
-	email1 = remove_accents(remove_punctuation(email1_u.lower()))
 	name2 = remove_accents(remove_punctuation(name2_u.lower()))
-	email2 = remove_accents(remove_punctuation(email2_u.lower()))
+	email1 = email1_u.decode('utf-8').strip()
+	email2 = email2_u.decode('utf-8').strip()
 
 	#simil(completeNameA, completeNameB) ≥ t;
 	if ratio(name1, name2) > threshold:
@@ -59,20 +58,20 @@ def is_same_person(name1_u, email1_u, name2_u, email2_u, threshold = 0.93):
 	prefix_b = substring_before(email2, '@')
 
 	# prefixB contains firstNameA and lastNameA; or
-	if first_name_a in prefix_b and last_name_a in prefix_b:
+	if first_name_a in prefix_b and last_name_a in prefix_b and first_name_a:
 		return True
 	
 	first_name_a_plus_initial = first_name_a if not last_name_a else first_name_a + last_name_a[0]
 
 	# prefixB contains firstNameA and the initial of lastNameA; or
-	if first_name_a_plus_initial  in prefix_b:
-		 return True
+	if first_name_a_plus_initial in prefix_b and first_name_a:
+		return True
 
 	initial_first_plus_last_name_a = last_name_a if not first_name_a else first_name_a[0] + last_name_a
 
 	#prefixB contains the initial of firstNameA and the lastNameA; or
 	if last_name_a and initial_first_plus_last_name_a in prefix_b:
-		 return True
+		return True
 
 	# simil(prefixA, prefixB) ≥ t.
 	if ratio(prefix_a, prefix_b) > threshold:
@@ -111,7 +110,14 @@ def test():
 	print(remove_accents(remove_punctuation(name)))
 
 def main():
-	print(is_same_person("Renato Oliveira", "renatoaao@cin.ufpe.br", "Renato Oliveira", "roliveira@cin"))
+	print(is_same_person("pivotal", "pivotal@darwin.boulder.pivotallabs.com", "Mark Rushakoff and Tim Labeeuw", "pair+mrushakoff+tim@pivotallabs.com"))
+	print(is_same_person("//de", "code@extremist.digital", "Jens Bissinger", "mail@jens-bissinger.de"))
+	print(is_same_person("Михаил", "mixan946@yandex.ru", "Ricardo Trindade", "ricardo.silva.trindade@gmail.com"))
+	print(is_same_person("Sarah Chandler", "schandler@pivotallabs.com", "Mark Rushakoff and Sarah Chandler", "pair+mrushakoff+schandler@pivotallabs.com"))
+	print(is_same_person("=", "=", "Ebrahim Byagowi", "ebrahim@gnu.org"))
+	print(is_same_person("Trung Lê", "joneslee85@gmail.com", "Phil Ostler", "philostler@gmail.com"))
+
+	#test()	
 
 if __name__ == '__main__':
     main()

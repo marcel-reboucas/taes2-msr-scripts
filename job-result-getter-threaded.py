@@ -10,7 +10,7 @@ csv.field_size_limit(sys.maxsize)
 
 # Will fix these later. These are the values that are used across the threads.
 CONCURRENT = 20 # number of the maximim concurrent calls
-BUILDS_PER_RUN = 3000000
+BUILDS_PER_RUN = 2000000
 
 # Example: https://api.travis-ci.org/builds/10297653
 
@@ -184,9 +184,10 @@ def main():
 			filereader = csv.DictReader(csvfile, skipinitialspace=True)
 			for row in filereader:
 
-				row_number = row['row']
-				print(row_number)
+				row_number = int(row['row'])
+	
 				if row_number > last_row_number:
+					print('last row!' + str(last_row_number))
 					last_row_number = row_number
 
 	print(last_row_number)

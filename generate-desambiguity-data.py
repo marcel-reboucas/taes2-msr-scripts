@@ -13,14 +13,15 @@ def create_folder_if_needed(folder_name):
 def main():
 
 	input_file_path = '../data/build-commiter-info-sorted3.csv'	
-	output_file_path = '../data/build-commiter-info-desamb.csv'	
+	output_file_path = '../data/build-commiter-info-desamb.csv'
+	ambiguous_file_path = '../data/ambiguous-users.csv'		
 
 	current_project = ''
 	current_project_users = []
 	current_project_ambiguities = {}
 
 	# open the csv containing travis data
-	with open(input_file_path, 'rb') as csvfile, open(output_file_path, 'wb') as outfile:
+	with open(input_file_path, 'rb') as csvfile, open(output_file_path, 'wb') as outfile, open(ambiguous_file_path, 'wb') as amb_file:
 
 		# read the file as csv
 		filereader = csv.DictReader(csvfile, skipinitialspace=True)
@@ -28,12 +29,14 @@ def main():
 		csvwriter = csv.DictWriter(outfile, fieldnames=["row","build_id","author_name","author_email","project_name"])
 		csvwriter.writeheader()
 
+		amb_file.write("old_name, old_email, substituted_name, substituted_email, project_name\n")
+
 		users = 0
 		amb_users = 0
 
 		for row in filereader:
 			
-			name = row['author_name']
+			name = row['author_name'].replace(",", "")
 			email = row['author_email']
 			project = row['project_name']
 
@@ -62,6 +65,7 @@ def main():
 						current_project_ambiguities[key] = user
 						amb_users += 1
 						print('Found ambiguous user! Old name: ' + name + ' Old email: ' + email + ' new name: ' + user[0] + ' new email: ' + user[1])
+						amb_file.write(name + "," + email + "," + user[0] + "," + user[1] + "," + project + "\n")
 
 				if not found_user:
 					current_project_users.append((name, email))
